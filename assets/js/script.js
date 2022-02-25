@@ -1,3 +1,65 @@
+const baseUrl='https://api.github.com/users';
+let form = document.getElementById("myForm");
+
+let request = async(url) => {
+    const results = await fetch(url);
+    const response = await results.json();
+    return response;
+}
+
+const getUser = async (user) => {
+    const url = `${baseUrl}/${user}`;
+    return request(url);
+}
+
+let getRepo = async (baseUrl, user, pagina, cantidad_repos) => {
+    const url = `${baseUrl}/${user}/repos?page=${pagina}&per_page=${cantidad_repos}`;
+    return request(url);
+}
+
+
+form.addEventListener("submit", async function(e){
+    e.preventDefault()
+
+    try {
+        let search = document.getElementById("nombre").value
+        let originalName = search.split(' ').join('')
+        let pagina = document.getElementById("pagina").value;
+        let nRepos = document.getElementById("repoPagina").value;
+        
+        const data = await getUser(originalName);
+        console.log(data);
+    
+        const data2 = await getRepo(baseUrl, originalName, pagina, nRepos);
+        console.log(data2);
+    
+        document.getElementById("resultados").innerHTML = `
+            <div class="col">
+                <h4>Datos de Usuario</h4>
+                <img class="img-fluid" src ="${data.avatar_url}"/>
+                <p>Nombre de Usuario: "${data.name}"</p>
+                <p>Nombre de Login: "${data.login}"</p>
+                <p>Cantidad de Repositorios: "${data.public_repos}"</p>
+                    <p>Localidad: "${data.location}"</p>
+                    <p>Tipo de Usuario: "${data.type}"</p>
+                </div>
+                <div class="col">
+                    <h4>Nombre de repositorios</h4>
+                    <ul>
+                    ${data2.map( (e) => {
+                        console.log(e.name);
+                        return `<li><a href="${e.homepage}">${e.name}</a></li>`
+                    }).join('')}
+                    </ul>
+                </div>
+            `
+    } catch (error) {
+        alert("Usuario no existe")
+    }
+})
+
+
+
 /* Requerimientos
 1. Crear tres funciones, una request, otra getUser y por último una función getRepo,
 todas deben implementar async..await. La función request hará las peticiones a la
@@ -21,58 +83,3 @@ necesarios para cada llamado de la API según la URL.
 5. En el caso que el mensaje retornado por la API sea “Not Found”, indicar mediante
 una ventana emergente que el usuario no existe y no mostrar ningún tipo de
 información en la sección de resultado en el documento HTML. */
-
-
-
-let baseUrl='https://api.github.com/users';
-var form = document.getElementById("myForm")
-
-form.addEventListener("submit", function(e){
-    e.preventDefault()
-
-    var search = document.getElementById("nombre").value
-    var originalName = search.split(' ').join('')
-
-    document.getElementById("resultados").innerHTML = ""
-
-    fetch('https://api.github.com/users/' + originalName)
-    .then((result) => result.json())
-    .then((data) => {
-        console.log(data)
-
-        document.getElementById("resultados").innerHTML = `
-            <a target="_blank" href="https://www.github.com/${originalName}"> <img src ="${data.avatar_url}"/> </a>
-        `
-    })
-})
-
-let request = async(url) => {
-    const results = await fetch(url);
-    const response = await results.json();
-    return response;
-}
-
-let getUser = async (user) => {
-    const url = `${baseUrl}/${user}`;
-    return request(url);
-}
-
-let getRepo = async (pagina, cantidad_repos) => {
-    const url = `${baseUrl}/${user}/repos?page=${pagina}&per_page=${cantidad_repos}`;
-    return request(url);
-}
-
-const emitter = () => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve("Información Enviada!");
-        }, 3000);
-    });
-};
-
-const llamado = new Promise ((resolve, reject) => {
-    if (getUser && getRepo) {
-        resolve("No sé qué poner acá");
-    }
-});
-
